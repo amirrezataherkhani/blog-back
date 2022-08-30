@@ -4,7 +4,16 @@ from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from rest_framework.authtoken.models import Token
+
+
+class CommentReply(models.Model):
+    author = models.ForeignKey('auth.User', on_delete=models.SET_NULL, related_name='user_replies', null=True)
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='replies')
+    content = models.CharField(max_length=500)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.content[:30]
 
 
 class Comment(models.Model):
@@ -12,6 +21,7 @@ class Comment(models.Model):
                                related_name='user_comments')
     post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='comments')
     content = models.CharField(max_length=500, null=True)
+    created = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.content[:30]
@@ -33,4 +43,3 @@ class Post(models.Model):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
-
